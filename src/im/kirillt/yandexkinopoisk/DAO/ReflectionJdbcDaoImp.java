@@ -16,15 +16,30 @@ import java.util.StringJoiner;
 public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
 
     private final Connection connection;
+    private  Class<T> typeHolder;
+    private String tableName;
+    private List<Field> columns;
+    private List<Field> keys;
+
+    @SuppressWarnings("unchecked")
+    public ReflectionJdbcDaoImp(Connection connection, T type) {
+        this.connection = connection;
+        this.typeHolder = (Class<T>) type.getClass();
+        init(type);
+    }
 
     public ReflectionJdbcDaoImp(Connection connection) {
         this.connection = connection;
+        try {
+            init(typeHolder.newInstance());
+        } catch (InstantiationException|IllegalAccessException ex) {
+            throw new IllegalArgumentException("Type T must have default constructor!");
+        }
     }
 
     @Override
     public void insert(T object) throws SQLException {
         final Map<String, Object> values = getColumnsValues(object);
-        final String tableName = AnnotationsParser.getTable(object.getClass());
         final PreparedStatement preparedStatement = connection.prepareStatement(generateInsertQuery(values, tableName));
         int index = 1;
         for (Object value : values.values()) {
@@ -54,9 +69,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     private Map<String, Object> getColumnsValues(T object) {
-        final List<Field> fields = AnnotationsParser.getColumns(object.getClass());
         final HashMap<String, Object> values = new HashMap<>();
-        for (Field field : fields) {
+        for (Field field : columns) {
             try {
                 values.put(field.getName(), field.get(object));
             } catch (IllegalAccessException ex) {
@@ -74,5 +88,11 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             valuesJoiner.add("?");
         }
         return "insert into " + tableName + " " + keysJoiner + " values " + valuesJoiner;
+    }
+
+    private void init(T type) {
+        this.tableName = AnnotationsParser.getTable(type.getClass());
+        this.columns = AnnotationsParser.getColumns(type.getClass());
+        this.keys = AnnotationsParser.getKeys(type.getClass());
     }
 }
