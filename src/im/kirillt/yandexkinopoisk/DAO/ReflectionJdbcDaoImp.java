@@ -1,11 +1,13 @@
 package im.kirillt.yandexkinopoisk.DAO;
 
+import im.kirillt.yandexkinopoisk.DAO.annotations.Column;
 import im.kirillt.yandexkinopoisk.DAO.annotations.Key;
 import im.kirillt.yandexkinopoisk.DAO.annotations.parser.AnnotationsParser;
 import im.kirillt.yandexkinopoisk.DAO.exceptions.FieldException;
 import sun.reflect.annotation.AnnotationParser;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,18 +24,18 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     private List<Field> keys;
 
     @SuppressWarnings("unchecked")
-    public ReflectionJdbcDaoImp(Connection connection, T type) {
-        this.connection = connection;
-        this.typeHolder = (Class<T>) type.getClass();
-        init(type);
-    }
-
     public ReflectionJdbcDaoImp(Connection connection) {
         this.connection = connection;
+        //Java generics are broken, want to have C# generics instead :(
+        this.typeHolder = (Class<T>)((ParameterizedType) getClass()
+                .getGenericSuperclass()).getActualTypeArguments()[0];
         try {
-            init(typeHolder.newInstance());
+            T type = typeHolder.newInstance();
+            this.tableName = AnnotationsParser.getTable(type.getClass());
+            this.columns = AnnotationsParser.getColumns(type.getClass());
+            this.keys = AnnotationsParser.getKeys(type.getClass());
         } catch (InstantiationException | IllegalAccessException ex) {
-            throw new IllegalArgumentException("Type T must have default constructor!");
+            throw new IllegalArgumentException("Generic type must have default constructor!");
         }
     }
 
@@ -59,7 +61,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     @Override
-    public List<T> selectAll() {
+    public List<T> selectAll() throws SQLException {
         return null;
     }
 
@@ -105,11 +107,5 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             index ++;
         }
         return statement;
-    }
-
-    private void init(T type) {
-        this.tableName = AnnotationsParser.getTable(type.getClass());
-        this.columns = AnnotationsParser.getColumns(type.getClass());
-        this.keys = AnnotationsParser.getKeys(type.getClass());
     }
 }
