@@ -1,13 +1,13 @@
 package im.kirillt.yandexkinopoisk.DAO.annotations.parser;
 
+import im.kirillt.yandexkinopoisk.DAO.annotations.Column;
 import im.kirillt.yandexkinopoisk.DAO.annotations.Key;
 import im.kirillt.yandexkinopoisk.DAO.annotations.Table;
-import im.kirillt.yandexkinopoisk.DAO.annotations.parser.exceptions.NoKeysFoundException;
 import im.kirillt.yandexkinopoisk.DAO.annotations.parser.exceptions.NotATableException;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public class AnnotationsParser {
@@ -18,14 +18,22 @@ public class AnnotationsParser {
         throw new NotATableException(clazz);
     }
 
-    public static Map<String, Object> getKeys(Class<?> clazz) throws NoKeysFoundException, IllegalAccessException {
-        final Map<String, Object> keys = new HashMap<>();
-        final Field[] fields = clazz.getDeclaredFields();
+    public static List<Field> getKeys(Class<?> clazz) {
+        return getAnnotatedFields(clazz, Key.class);
+    }
+
+    public static List<Field> getColumns(Class<?> clazz) {
+        return getAnnotatedFields(clazz, Column.class);
+    }
+
+    private static List<Field> getAnnotatedFields(Class<?> clazz, Class<? extends Annotation> annotationClass) {
+        final List<Field> result = new ArrayList<>();
+        Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
-            if (field.isAnnotationPresent(Key.class)) {
-                keys.put(field.getName(), field.get(clazz));
+            if (field.isAnnotationPresent(annotationClass)) {
+                result.add(field);
             }
         }
-        return keys;
+        return result;
     }
 }
