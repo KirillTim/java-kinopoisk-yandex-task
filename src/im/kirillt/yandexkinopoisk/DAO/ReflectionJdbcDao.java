@@ -1,10 +1,12 @@
 package im.kirillt.yandexkinopoisk.DAO;
 
+
+import java.sql.SQLException;
 import java.util.List;
 
 public interface ReflectionJdbcDao<T> {
 
-    void insert(T object);
+    void insert(T object) throws SQLException;
 
     void update(T object);
 
