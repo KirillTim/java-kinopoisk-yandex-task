@@ -14,5 +14,5 @@ public interface ReflectionJdbcDao<T> {
 
     T selectByKey(T key);
 
-    List<T> selectAll();
+    List<T> selectAll() throws SQLException;
 }
