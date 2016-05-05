@@ -1,4 +1,4 @@
-package im.kirillt.yandexkinopoisk;
+package im.kirillt.yandexkinopoisk.DAO;
 
 import java.util.List;
 
