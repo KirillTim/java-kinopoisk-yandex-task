@@ -28,7 +28,7 @@ public class AnnotationsParser {
 
     private static List<Field> getAnnotatedFields(Class<?> clazz, Class<? extends Annotation> annotationClass) {
         final List<Field> result = new ArrayList<>();
-        Field[] fields = clazz.getDeclaredFields();
+        final Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             if (field.isAnnotationPresent(annotationClass)) {
                 result.add(field);
