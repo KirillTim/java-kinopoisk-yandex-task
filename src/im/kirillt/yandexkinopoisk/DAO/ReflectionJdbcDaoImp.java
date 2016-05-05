@@ -27,7 +27,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     public ReflectionJdbcDaoImp(Connection connection) {
         this.connection = connection;
         //Java generics are broken, want to have C# generics instead :(
-        this.typeHolder = (Class<T>)((ParameterizedType) getClass()
+        this.typeHolder = (Class<T>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0];
         try {
             T type = typeHolder.newInstance();
@@ -62,7 +62,13 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
 
     @Override
     public List<T> selectAll() throws SQLException {
-        return null;
+        final PreparedStatement preparedStatement = generateSelectStatement(Collections.emptyMap());
+        final ResultSet resultSet = preparedStatement.executeQuery();
+        final List<T> result = new ArrayList<>();
+        while (resultSet.next()) {
+            result.add(generateObject(resultSet));
+        }
+        return result;
     }
 
     private Map<String, Object> getColumnsValues(T object) {
@@ -104,8 +110,22 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         int index = 1;
         for (Object value : values.values()) {
             statement.setObject(index, value);
-            index ++;
+            index++;
         }
         return statement;
+    }
+
+    private T generateObject(ResultSet cursor) throws SQLException {
+        try {
+            final T result = typeHolder.newInstance();
+            for (Field field : columns) {
+                String columnName = field.getAnnotation(Column.class).name();
+                field.set(result, cursor.getObject(columnName));
+            }
+            return result;
+
+        } catch (InstantiationException | IllegalAccessException ex) {
+            throw new IllegalArgumentException("Generic type must have default constructor!");
+        }
     }
 }
