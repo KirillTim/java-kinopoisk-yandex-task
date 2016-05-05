@@ -27,8 +27,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     public ReflectionJdbcDaoImp(Connection connection) {
         this.connection = connection;
         //Java generics are broken, want to have C# generics instead :(
-        this.typeHolder = (Class<T>) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0];
+        this.typeHolder = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
+                .getActualTypeArguments()[0];
         try {
             T type = typeHolder.newInstance();
             this.tableName = AnnotationsParser.getTable(type.getClass());
