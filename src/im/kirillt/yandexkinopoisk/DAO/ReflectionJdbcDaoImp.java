@@ -15,10 +15,10 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
+public class ReflectionJdbcDaoImp<T> extends AbstractReflectionJdbcDao<T>
+        implements ReflectionJdbcDao<T> {
 
     private final Connection connection;
-    private Class<T> typeHolder;
     private String tableName;
     private List<Field> columns;
     private List<Field> keys;
@@ -26,11 +26,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     @SuppressWarnings("unchecked")
     public ReflectionJdbcDaoImp(Connection connection) {
         this.connection = connection;
-        //Java generics are broken, want to have C# generics instead :(
-        this.typeHolder = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
-                .getActualTypeArguments()[0];
         try {
-            T type = typeHolder.newInstance();
+            T type = getTypeHolder().newInstance();
             this.tableName = AnnotationsParser.getTable(type.getClass());
             this.columns = AnnotationsParser.getColumns(type.getClass());
             this.keys = AnnotationsParser.getKeys(type.getClass());
@@ -117,7 +114,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
 
     private T generateObject(ResultSet cursor) throws SQLException {
         try {
-            final T result = typeHolder.newInstance();
+            final T result = getTypeHolder().newInstance();
             for (Field field : columns) {
                 String columnName = field.getAnnotation(Column.class).name();
                 field.set(result, cursor.getObject(columnName));
