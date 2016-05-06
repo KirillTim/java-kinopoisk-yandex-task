@@ -110,7 +110,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     private PreparedStatement generateUpdateStatement(T object) throws SQLException {
         final Map<String, Object> setValues = getFieldsValues(columns, object);
         final Map<String, Object> keyValues = getFieldsValues(keys, object);
-        final StringJoiner setJoiner = new StringJoiner(",");
+        final StringJoiner setJoiner = new StringJoiner(", ");
         for (String key : setValues.keySet()) {
             setJoiner.add(key + "=?");
         }
@@ -142,9 +142,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     private String generateWhereString(Map<String, Object> keys) {
-        final StringJoiner keysJoiner = new StringJoiner(",");
+        final StringJoiner keysJoiner = new StringJoiner(" AND ");
         for (String key : keys.keySet()) {
-            keysJoiner.add(key + "= ? ");
+            keysJoiner.add(key + "=?");
         }
         return " WHERE " + keysJoiner.toString();
     }
