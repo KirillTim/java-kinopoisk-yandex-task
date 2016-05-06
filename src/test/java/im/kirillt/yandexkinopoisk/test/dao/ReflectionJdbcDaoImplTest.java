@@ -2,9 +2,9 @@ package im.kirillt.yandexkinopoisk.test.dao;
 
 import im.kirillt.yandexkinopoisk.DAO.ReflectionJdbcDao;
 import im.kirillt.yandexkinopoisk.DAO.ReflectionJdbcDaoImp;
-import im.kirillt.yandexkinopoisk.People;
 import org.dbunit.Assertion;
 import org.dbunit.dataset.IDataSet;
+import org.dbunit.dataset.ITable;
 import org.h2.tools.RunScript;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -15,8 +15,7 @@ import static im.kirillt.yandexkinopoisk.test.dao.Utils.*;
 import static org.h2.engine.Constants.UTF8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class ReflectionJdbcDaoImplTest {
 
@@ -35,6 +34,26 @@ public class ReflectionJdbcDaoImplTest {
     }
 
     @Test
+    public void insertSuccess() throws Exception {
+        Person toInsert = new Person.PersonBuilder().withId(100500).withName("Uniq Name").withAge(666).build();
+        boolean result = personDao.insert(toInsert);
+        assertTrue(result);
+        IDataSet expected =  DefaultDataSet.getDefaultBuilder().newRow(TABLE_NAME)
+                .with(COLUMN_ID, toInsert.getId())
+                .with(COLUMN_NAME, toInsert.getName())
+                .with(COLUMN_AGE, toInsert.getAge()).add().build();
+        Assertion.assertEquals(dataSetFromConnection(dataConnection()), expected);
+    }
+
+    @Test
+    public void insertFail() throws Exception {
+        Person toInsert = DefaultDataSet.defaultPersons[0];
+        boolean result = personDao.insert(toInsert);
+        assertFalse(result);
+        assertDataBaseNotChanged();
+    }
+
+    @Test
     public void selectByKeySuccess() throws Exception {
         Person charlie = personDao.selectByKey(new Person.PersonBuilder().withId(3).build());
         assertThat(charlie.getName(), is("Charlie"));
@@ -50,22 +69,27 @@ public class ReflectionJdbcDaoImplTest {
     }
 
     @Test
-    public void insertSuccess() throws Exception {
-        Person toInsert = new Person.PersonBuilder().withId(100500).withName("Uniq Name").withAge(666).build();
-        personDao.insert(toInsert);
-        IDataSet expected =  DefaultDataSet.getDefaultBuilder().newRow(TABLE_NAME)
-                .with(COLUMN_ID, toInsert.getId())
-                .with(COLUMN_NAME, toInsert.getName())
-                .with(COLUMN_AGE, toInsert.getAge()).add().build();
-        Assertion.assertEquals(dataSetFromConnection(dataConnection()), expected);
+    public void updateSuccess() throws Exception {
+        Person toUpdate = DefaultDataSet.defaultPersons[0];
+        toUpdate.setName("Update");
+        toUpdate.setAge(999);
+        boolean result = personDao.update(toUpdate);
+        assertTrue(result);
+        IDataSet actual = dataSetFromConnection(dataConnection());
+        ITable companyTable = actual.getTable(TABLE_NAME);
+        assertEquals(toUpdate.getName(), companyTable.getValue(0, COLUMN_NAME));
+        assertEquals(toUpdate.getAge(), companyTable.getValue(0, COLUMN_AGE));
+        assertEquals(toUpdate.getId(), companyTable.getValue(0, COLUMN_ID));
     }
 
     @Test
-    public void insertFail() throws Exception {
-        Person toInsert = DefaultDataSet.defaultPersons[0];
-        personDao.insert(toInsert);
+    public void updateFail() throws Exception {
+        Person unknown = new Person(100500, "unknown", 42);
+        boolean result = personDao.update(unknown);
+        assertFalse(result);
         assertDataBaseNotChanged();
     }
+
 
     private static void assertDataBaseNotChanged() throws Exception {
         Assertion.assertEquals(dataSetFromConnection(dataConnection()), DefaultDataSet.getDataSet());
