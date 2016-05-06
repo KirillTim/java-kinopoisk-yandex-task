@@ -2,6 +2,7 @@ package im.kirillt.yandexkinopoisk.DAO;
 
 import im.kirillt.yandexkinopoisk.DAO.annotations.Column;
 import im.kirillt.yandexkinopoisk.DAO.annotations.parser.AnnotationsParser;
+import im.kirillt.yandexkinopoisk.DAO.exceptions.DataAccessException;
 import im.kirillt.yandexkinopoisk.DAO.exceptions.FieldException;
 
 import java.lang.reflect.Field;
@@ -42,8 +43,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             int result = statement.executeUpdate();
             return result > 0;
         } catch (SQLException ex) {
-            ex.printStackTrace();
-            return false;
+            throw new DataAccessException(ex);
         }
     }
 
@@ -53,8 +53,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             int result = statement.executeUpdate();
             return result > 0;
         } catch (SQLException ex) {
-            ex.printStackTrace();
-            return false;
+            throw new DataAccessException(ex);
         }
     }
 
@@ -64,8 +63,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             int result = statement.executeUpdate();
             return result > 0;
         } catch (SQLException ex) {
-            ex.printStackTrace();
-            return false;
+            throw new DataAccessException(ex);
         }
     }
 
@@ -77,8 +75,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             resultSet.next();
             return generateObject(resultSet);
         } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
+            throw new DataAccessException(ex);
         }
     }
 
@@ -92,8 +89,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             }
             return result;
         } catch (SQLException ex) {
-            ex.printStackTrace();
-            return null;
+            throw new DataAccessException(ex);
         }
     }
 

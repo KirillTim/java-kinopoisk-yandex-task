@@ -2,13 +2,16 @@ package im.kirillt.yandexkinopoisk.test.dao;
 
 import im.kirillt.yandexkinopoisk.DAO.ReflectionJdbcDao;
 import im.kirillt.yandexkinopoisk.DAO.ReflectionJdbcDaoImp;
+import im.kirillt.yandexkinopoisk.DAO.exceptions.DataAccessException;
 import org.dbunit.Assertion;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
 import org.h2.tools.RunScript;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static im.kirillt.yandexkinopoisk.test.dao.DefaultDataSet.*;
 import static im.kirillt.yandexkinopoisk.test.dao.Utils.*;
@@ -33,6 +36,9 @@ public class ReflectionJdbcDaoImplTest {
         cleanlyInsert(dataSet);
     }
 
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
+
     @Test
     public void insertSuccess() throws Exception {
         Person toInsert = new Person.PersonBuilder().withId(100500).withName("Uniq Name").withAge(666).build();
@@ -47,10 +53,9 @@ public class ReflectionJdbcDaoImplTest {
 
     @Test
     public void insertFail() throws Exception {
+        exception.expect(DataAccessException.class);
         Person toInsert = DefaultDataSet.defaultPersons.get(0);
-        boolean result = personDao.insert(toInsert);
-        assertFalse(result);
-        assertDataBaseNotChanged();
+        personDao.insert(toInsert);
     }
 
     @Test
@@ -102,9 +107,13 @@ public class ReflectionJdbcDaoImplTest {
 
     @Test
     public void selectByKeyFail() throws Exception {
+        exception.expect(DataAccessException.class);
         Person unknown = personDao.selectByKey(new Person.PersonBuilder().withId(100500).build());
-        assertNull(unknown);
-        assertDataBaseNotChanged();
+    }
+
+    @Test
+    public void selectAllTest() throws Exception {
+
     }
 
     private static void assertDataBaseNotChanged() throws Exception {
