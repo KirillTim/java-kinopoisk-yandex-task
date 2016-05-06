@@ -13,10 +13,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Collections;
+import java.util.List;
+
 import static im.kirillt.yandexkinopoisk.test.dao.DefaultDataSet.*;
 import static im.kirillt.yandexkinopoisk.test.dao.Utils.*;
 import static org.h2.engine.Constants.UTF8;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
@@ -108,12 +112,13 @@ public class ReflectionJdbcDaoImplTest {
     @Test
     public void selectByKeyFail() throws Exception {
         exception.expect(DataAccessException.class);
-        Person unknown = personDao.selectByKey(new Person.PersonBuilder().withId(100500).build());
+        personDao.selectByKey(new Person.PersonBuilder().withId(100500).build());
     }
 
     @Test
     public void selectAllTest() throws Exception {
-
+        List<Person> result = personDao.selectAll();
+        assertThat(result, containsInAnyOrder(new Person(1, "Bob", 18), new Person(2, "Alice", 23), new Person(3, "Charlie", 42)));
     }
 
     private static void assertDataBaseNotChanged() throws Exception {
