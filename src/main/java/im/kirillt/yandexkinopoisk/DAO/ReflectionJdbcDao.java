@@ -8,11 +8,11 @@ public interface ReflectionJdbcDao<T> {
 
     void insert(T object) throws SQLException;
 
-    void update(T object);
+    void update(T object) throws SQLException;
 
-    void deleteByKey(T key);
+    void deleteByKey(T key) throws SQLException;
 
-    T selectByKey(T key);
+    T selectByKey(T key) throws SQLException;
 
     List<T> selectAll() throws SQLException;
 }

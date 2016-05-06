@@ -30,35 +30,36 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         // But I WANT to know what type T is, so , please, pass it to my constructor
         this.connection = connection;
         this.typeHolder = typeHolder;
-        try {
-            T type = typeHolder.newInstance();
-            this.tableName = AnnotationsParser.getTable(type.getClass());
-            this.columns = AnnotationsParser.getColumns(type.getClass());
-            this.keys = AnnotationsParser.getKeys(type.getClass());
-        } catch (InstantiationException | IllegalAccessException ex) {
-            throw new IllegalArgumentException("Generic type must have default constructor!");
-        }
+        final T type = createObjectOfTypeT();
+        this.tableName = AnnotationsParser.getTable(type.getClass());
+        this.columns = AnnotationsParser.getColumns(type.getClass());
+        this.keys = AnnotationsParser.getKeys(type.getClass());
     }
 
     @Override
     public void insert(T object) throws SQLException {
-        final PreparedStatement preparedStatement = generateInsertStatement(getColumnsValues(object));
-        preparedStatement.executeUpdate();
+        final PreparedStatement statement = generateInsertStatement(getFieldsValues(columns, object));
+        statement.executeUpdate();
     }
 
     @Override
-    public void update(T object) {
-
+    public void update(T object) throws SQLException {
+        final PreparedStatement statement = generateUpdateStatement(object);
+        statement.executeQuery();
     }
 
     @Override
-    public void deleteByKey(T key) {
-
+    public void deleteByKey(T key) throws SQLException {
+        final PreparedStatement statement = generateDeleteStatement(getFieldsValues(keys, key));
+        statement.executeUpdate();
     }
 
     @Override
-    public T selectByKey(T key) {
-        return null;
+    public T selectByKey(T key) throws SQLException {
+        final PreparedStatement statement = generateSelectStatement(getFieldsValues(keys, key));
+        final ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+        return generateObject(resultSet);
     }
 
     @Override
@@ -72,9 +73,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         return result;
     }
 
-    private Map<String, Object> getColumnsValues(T object) {
+    private Map<String, Object> getFieldsValues(List<Field> fields, T object) {
         final HashMap<String, Object> values = new HashMap<>();
-        for (Field field : columns) {
+        for (Field field : fields) {
             try {
                 field.setAccessible(true);
                 values.put(field.getName(), field.get(object));
@@ -84,6 +85,27 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             }
         }
         return values;
+    }
+
+    private PreparedStatement generateUpdateStatement(T object) throws SQLException {
+        final Map<String, Object> setValues = getFieldsValues(columns, object);
+        final Map<String, Object> keyValues = getFieldsValues(keys, object);
+        final StringJoiner setJoiner = new StringJoiner(",");
+        for (String key : setValues.keySet()) {
+            setJoiner.add(key + "=?");
+        }
+        final String query = "SET "+setJoiner+ generateWhereString(keyValues);
+        final PreparedStatement statement = connection.prepareStatement(query);
+        int index = 1;
+        for (Object value : setValues.values()) {
+            statement.setObject(index, value);
+            index++;
+        }
+        for (Object value : keyValues.values()) {
+            statement.setObject(index, value);
+            index ++;
+        }
+        return statement;
     }
 
     private PreparedStatement generateInsertStatement(Map<String, Object> values) throws SQLException {
@@ -99,17 +121,37 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         return statement;
     }
 
-    private PreparedStatement generateSelectStatement(Map<String, Object> values) throws SQLException {
-        final StringJoiner keysJoiner = new StringJoiner(",", "(", ")");
-        keysJoiner.setEmptyValue("*");
-        values.keySet().forEach(keysJoiner::add);
-        final String query = "select " + keysJoiner + " from " + tableName;
+    private String generateWhereString(Map<String, Object> keys) {
+        final StringJoiner keysJoiner = new StringJoiner(",");
+        for (String key : keys.keySet()) {
+            keysJoiner.add(key + "= ? ");
+        }
+        return " WHERE " + keysJoiner.toString();
+    }
+
+    private PreparedStatement generateDeleteStatement(Map<String, Object> keys) throws SQLException {
+        if (keys.isEmpty()) {
+            throw new IllegalArgumentException("keys shouldn't be empty");
+        }
+        final String whereString = generateWhereString(keys);
+        String query = "DELETE FROM " + tableName + whereString;
         PreparedStatement statement = connection.prepareStatement(query);
-        statement = addValues(statement, values);
+        statement = addValues(statement, keys);
         return statement;
     }
 
-    private static PreparedStatement addValues(PreparedStatement statement, Map<String, Object> values) throws SQLException {
+    private PreparedStatement generateSelectStatement(Map<String, Object> keys) throws SQLException {
+        String query = "SELECT * FROM " + tableName;
+        if (!keys.isEmpty()) {
+            query += generateWhereString(keys);
+        }
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement = addValues(statement, keys);
+        return statement;
+    }
+
+    private static PreparedStatement addValues(PreparedStatement statement, Map<String, Object> values)
+            throws SQLException {
         int index = 1;
         for (Object value : values.values()) {
             statement.setObject(index, value);
@@ -120,7 +162,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
 
     private T generateObject(ResultSet cursor) throws SQLException {
         try {
-            final T result = typeHolder.newInstance();
+            final T result = createObjectOfTypeT();
             for (Field field : columns) {
                 String columnName = field.getAnnotation(Column.class).name();
                 field.setAccessible(true);
@@ -129,8 +171,18 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             }
             return result;
 
-        } catch (InstantiationException | IllegalAccessException ex) {
+        } catch (IllegalAccessException ex) {
+            throw new IllegalArgumentException("Can't access feild");
+        }
+    }
+
+    private T createObjectOfTypeT() {
+        try {
+            return typeHolder.newInstance();
+        } catch (InstantiationException ex) {
             throw new IllegalArgumentException("Generic type must have default constructor!");
+        } catch (IllegalAccessException ex) {
+            throw new IllegalArgumentException("Can't access constructor");
         }
     }
 }
