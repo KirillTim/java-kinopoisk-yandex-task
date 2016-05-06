@@ -180,9 +180,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         try {
             return typeHolder.newInstance();
         } catch (InstantiationException ex) {
-            throw new IllegalArgumentException("Generic type must have default constructor!");
+            throw new IllegalArgumentException("Generic type must have default constructor!", ex);
         } catch (IllegalAccessException ex) {
-            throw new IllegalArgumentException("Can't access constructor");
+            throw new IllegalArgumentException("Can't access constructor", ex);
         }
     }
 }
