@@ -47,7 +47,7 @@ public class ReflectionJdbcDaoImplTest {
 
     @Test
     public void insertFail() throws Exception {
-        Person toInsert = DefaultDataSet.defaultPersons[0];
+        Person toInsert = DefaultDataSet.defaultPersons.get(0);
         boolean result = personDao.insert(toInsert);
         assertFalse(result);
         assertDataBaseNotChanged();
@@ -55,7 +55,7 @@ public class ReflectionJdbcDaoImplTest {
 
     @Test
     public void updateSuccess() throws Exception {
-        Person toUpdate = DefaultDataSet.defaultPersons[0];
+        Person toUpdate = DefaultDataSet.defaultPersons.get(0);
         toUpdate.setName("Update");
         toUpdate.setAge(999);
         boolean result = personDao.update(toUpdate);
@@ -71,6 +71,23 @@ public class ReflectionJdbcDaoImplTest {
     public void updateFail() throws Exception {
         Person unknown = new Person(100500, "unknown", 42);
         boolean result = personDao.update(unknown);
+        assertFalse(result);
+        assertDataBaseNotChanged();
+    }
+
+    @Test
+    public void deleteByKeySuccess() throws Exception {
+        Person toDelete = defaultPersons.get(2);
+        boolean result = personDao.deleteByKey(toDelete);
+        assertTrue(result);
+        IDataSet expected = DefaultDataSet.getDataSet(defaultPersons.subList(0, 2));
+        Assertion.assertEquals(dataSetFromConnection(dataConnection()), expected);
+    }
+
+    @Test
+    public void deleteByKeyFail() throws Exception {
+        Person unknown = new Person(100500, "unknown", 42);
+        boolean result = personDao.deleteByKey(unknown);
         assertFalse(result);
         assertDataBaseNotChanged();
     }
