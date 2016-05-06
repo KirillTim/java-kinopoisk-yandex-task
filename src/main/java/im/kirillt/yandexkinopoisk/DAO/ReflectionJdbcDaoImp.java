@@ -30,20 +30,16 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         // But I WANT to know what type T is, so , please, pass it to my constructor
         this.connection = connection;
         this.typeHolder = typeHolder;
-        try {
-            T type = typeHolder.newInstance();
-            this.tableName = AnnotationsParser.getTable(type.getClass());
-            this.columns = AnnotationsParser.getColumns(type.getClass());
-            this.keys = AnnotationsParser.getKeys(type.getClass());
-        } catch (InstantiationException | IllegalAccessException ex) {
-            throw new IllegalArgumentException("Generic type must have default constructor!");
-        }
+        final T type = createObjectOfTypeT();
+        this.tableName = AnnotationsParser.getTable(type.getClass());
+        this.columns = AnnotationsParser.getColumns(type.getClass());
+        this.keys = AnnotationsParser.getKeys(type.getClass());
     }
 
     @Override
     public void insert(T object) throws SQLException {
-        final PreparedStatement preparedStatement = generateInsertStatement(getColumnsValues(object));
-        preparedStatement.executeUpdate();
+        final PreparedStatement statement = generateInsertStatement(getFieldsValues(columns, object));
+        statement.executeUpdate();
     }
 
     @Override
@@ -57,7 +53,10 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     @Override
-    public T selectByKey(T key) {
+    public T selectByKey(T key) throws SQLException {
+        final PreparedStatement statement = generateSelectStatement(getFieldsValues(keys, key));
+        final ResultSet resultSet = statement.executeQuery();
+        final T result = createObjectOfTypeT();
         return null;
     }
 
@@ -72,9 +71,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         return result;
     }
 
-    private Map<String, Object> getColumnsValues(T object) {
+    private Map<String, Object> getFieldsValues(List<Field> fields, T object) {
         final HashMap<String, Object> values = new HashMap<>();
-        for (Field field : columns) {
+        for (Field field : fields) {
             try {
                 field.setAccessible(true);
                 values.put(field.getName(), field.get(object));
@@ -102,7 +101,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     private PreparedStatement generateSelectStatement(Map<String, Object> keys) throws SQLException {
         final StringJoiner keysJoiner = new StringJoiner(",");
         for (String key : keys.keySet()) {
-            keysJoiner.add(key+"='?'");
+            keysJoiner.add(key + "='?'");
         }
         String query = "SELECT * FROM " + tableName;
         if (!keys.isEmpty()) {
@@ -113,7 +112,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         return statement;
     }
 
-    private static PreparedStatement addValues(PreparedStatement statement, Map<String, Object> values) throws SQLException {
+    private static PreparedStatement addValues(PreparedStatement statement, Map<String, Object> values)
+            throws SQLException {
         int index = 1;
         for (Object value : values.values()) {
             statement.setObject(index, value);
@@ -124,7 +124,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
 
     private T generateObject(ResultSet cursor) throws SQLException {
         try {
-            final T result = typeHolder.newInstance();
+            final T result = createObjectOfTypeT();
             for (Field field : columns) {
                 String columnName = field.getAnnotation(Column.class).name();
                 field.setAccessible(true);
@@ -133,8 +133,18 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             }
             return result;
 
-        } catch (InstantiationException | IllegalAccessException ex) {
+        } catch (IllegalAccessException ex) {
+            throw new IllegalArgumentException("Can't access feild");
+        }
+    }
+
+    private T createObjectOfTypeT() {
+        try {
+            return typeHolder.newInstance();
+        } catch (InstantiationException ex) {
             throw new IllegalArgumentException("Generic type must have default constructor!");
+        } catch (IllegalAccessException ex) {
+            throw new IllegalArgumentException("Can't access constructor");
         }
     }
 }
