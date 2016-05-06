@@ -39,8 +39,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     @Override
     public boolean insert(T object) {
         try (final PreparedStatement statement = generateInsertStatement(getFieldsValues(columns, object))) {
-            statement.executeUpdate();
-            return true;
+            int result = statement.executeUpdate();
+            return result > 0;
         } catch (SQLException ex) {
             ex.printStackTrace();
             return false;
@@ -50,8 +50,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     @Override
     public boolean update(T object) {
         try (final PreparedStatement statement = generateUpdateStatement(object)) {
-            statement.executeUpdate();
-            return true;
+            int result = statement.executeUpdate();
+            return result > 0;
         } catch (SQLException ex) {
             ex.printStackTrace();
             return false;
@@ -61,8 +61,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     @Override
     public boolean deleteByKey(T key) {
         try (final PreparedStatement statement = generateDeleteStatement(getFieldsValues(keys, key))) {
-            statement.executeUpdate();
-            return true;
+            int result = statement.executeUpdate();
+            return result > 0;
         } catch (SQLException ex) {
             ex.printStackTrace();
             return false;
