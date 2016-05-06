@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface ReflectionJdbcDao<T> {
 
-    void insert(T object);
+    boolean insert(T object);
 
-    void update(T object);
+    boolean update(T object);
 
-    void deleteByKey(T key);
+    boolean deleteByKey(T key);
 
     T selectByKey(T key);
 

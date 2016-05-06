@@ -37,29 +37,35 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     @Override
-    public void insert(T object) {
+    public boolean insert(T object) {
         try (final PreparedStatement statement = generateInsertStatement(getFieldsValues(columns, object))) {
             statement.executeUpdate();
+            return true;
         } catch (SQLException ex) {
             ex.printStackTrace();
+            return false;
         }
     }
 
     @Override
-    public void update(T object) {
+    public boolean update(T object) {
         try (final PreparedStatement statement = generateUpdateStatement(object)) {
             statement.executeQuery();
+            return true;
         } catch (SQLException ex) {
             ex.printStackTrace();
+            return false;
         }
     }
 
     @Override
-    public void deleteByKey(T key) {
+    public boolean deleteByKey(T key) {
         try (final PreparedStatement statement = generateDeleteStatement(getFieldsValues(keys, key))) {
             statement.executeUpdate();
+            return true;
         } catch (SQLException ex) {
             ex.printStackTrace();
+            return false;
         }
     }
 
