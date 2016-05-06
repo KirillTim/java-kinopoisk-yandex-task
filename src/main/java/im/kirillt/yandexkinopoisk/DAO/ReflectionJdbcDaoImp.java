@@ -37,40 +37,57 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     @Override
-    public void insert(T object) throws SQLException {
-        final PreparedStatement statement = generateInsertStatement(getFieldsValues(columns, object));
-        statement.executeUpdate();
-    }
-
-    @Override
-    public void update(T object) throws SQLException {
-        final PreparedStatement statement = generateUpdateStatement(object);
-        statement.executeQuery();
-    }
-
-    @Override
-    public void deleteByKey(T key) throws SQLException {
-        final PreparedStatement statement = generateDeleteStatement(getFieldsValues(keys, key));
-        statement.executeUpdate();
-    }
-
-    @Override
-    public T selectByKey(T key) throws SQLException {
-        final PreparedStatement statement = generateSelectStatement(getFieldsValues(keys, key));
-        final ResultSet resultSet = statement.executeQuery();
-        resultSet.next();
-        return generateObject(resultSet);
-    }
-
-    @Override
-    public List<T> selectAll() throws SQLException {
-        final PreparedStatement preparedStatement = generateSelectStatement(Collections.emptyMap());
-        final ResultSet resultSet = preparedStatement.executeQuery();
-        final List<T> result = new ArrayList<>();
-        while (resultSet.next()) {
-            result.add(generateObject(resultSet));
+    public void insert(T object) {
+        try (final PreparedStatement statement = generateInsertStatement(getFieldsValues(columns, object))) {
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
-        return result;
+    }
+
+    @Override
+    public void update(T object) {
+        try (final PreparedStatement statement = generateUpdateStatement(object)) {
+            statement.executeQuery();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteByKey(T key) {
+        try (final PreparedStatement statement = generateDeleteStatement(getFieldsValues(keys, key))) {
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public T selectByKey(T key) {
+        try (final PreparedStatement statement = generateSelectStatement(getFieldsValues(keys, key));
+             final ResultSet resultSet = statement.executeQuery()) {
+            resultSet.next();
+            return generateObject(resultSet);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public List<T> selectAll() {
+        try (final PreparedStatement preparedStatement = generateSelectStatement(Collections.emptyMap());
+             final ResultSet resultSet = preparedStatement.executeQuery()) {
+            final List<T> result = new ArrayList<>();
+            while (resultSet.next()) {
+                result.add(generateObject(resultSet));
+            }
+            return result;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
     private Map<String, Object> getFieldsValues(List<Field> fields, T object) {
@@ -94,7 +111,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         for (String key : setValues.keySet()) {
             setJoiner.add(key + "=?");
         }
-        final String query = "SET "+setJoiner+ generateWhereString(keyValues);
+        final String query = "SET " + setJoiner + generateWhereString(keyValues);
         final PreparedStatement statement = connection.prepareStatement(query);
         int index = 1;
         for (Object value : setValues.values()) {
@@ -103,7 +120,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         }
         for (Object value : keyValues.values()) {
             statement.setObject(index, value);
-            index ++;
+            index++;
         }
         return statement;
     }
