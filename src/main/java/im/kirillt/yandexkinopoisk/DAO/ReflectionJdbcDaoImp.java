@@ -56,8 +56,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     public T selectByKey(T key) throws SQLException {
         final PreparedStatement statement = generateSelectStatement(getFieldsValues(keys, key));
         final ResultSet resultSet = statement.executeQuery();
-        final T result = createObjectOfTypeT();
-        return null;
+        resultSet.next();
+        return generateObject(resultSet);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     private PreparedStatement generateSelectStatement(Map<String, Object> keys) throws SQLException {
         final StringJoiner keysJoiner = new StringJoiner(",");
         for (String key : keys.keySet()) {
-            keysJoiner.add(key + "='?'");
+            keysJoiner.add(key + "= ? ");
         }
         String query = "SELECT * FROM " + tableName;
         if (!keys.isEmpty()) {

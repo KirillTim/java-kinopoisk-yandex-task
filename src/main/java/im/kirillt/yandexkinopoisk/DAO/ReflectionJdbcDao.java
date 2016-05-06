@@ -12,7 +12,7 @@ public interface ReflectionJdbcDao<T> {
 
     void deleteByKey(T key);
 
-    T selectByKey(T key);
+    T selectByKey(T key) throws SQLException;
 
     List<T> selectAll() throws SQLException;
 }
