@@ -54,21 +54,6 @@ public class ReflectionJdbcDaoImplTest {
     }
 
     @Test
-    public void selectByKeySuccess() throws Exception {
-        Person charlie = personDao.selectByKey(new Person.PersonBuilder().withId(3).build());
-        assertThat(charlie.getName(), is("Charlie"));
-        assertThat(charlie.getAge(), is(42));
-        assertDataBaseNotChanged();
-    }
-
-    @Test
-    public void selectByKeyFail() throws Exception {
-        Person unknown = personDao.selectByKey(new Person.PersonBuilder().withId(100500).build());
-        assertNull(unknown);
-        assertDataBaseNotChanged();
-    }
-
-    @Test
     public void updateSuccess() throws Exception {
         Person toUpdate = DefaultDataSet.defaultPersons[0];
         toUpdate.setName("Update");
@@ -90,6 +75,20 @@ public class ReflectionJdbcDaoImplTest {
         assertDataBaseNotChanged();
     }
 
+    @Test
+    public void selectByKeySuccess() throws Exception {
+        Person charlie = personDao.selectByKey(new Person.PersonBuilder().withId(3).build());
+        assertThat(charlie.getName(), is("Charlie"));
+        assertThat(charlie.getAge(), is(42));
+        assertDataBaseNotChanged();
+    }
+
+    @Test
+    public void selectByKeyFail() throws Exception {
+        Person unknown = personDao.selectByKey(new Person.PersonBuilder().withId(100500).build());
+        assertNull(unknown);
+        assertDataBaseNotChanged();
+    }
 
     private static void assertDataBaseNotChanged() throws Exception {
         Assertion.assertEquals(dataSetFromConnection(dataConnection()), DefaultDataSet.getDataSet());
