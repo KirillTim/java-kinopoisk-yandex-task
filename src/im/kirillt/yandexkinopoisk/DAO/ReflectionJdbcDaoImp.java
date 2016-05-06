@@ -121,7 +121,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             final T result = typeHolder.newInstance();
             for (Field field : columns) {
                 String columnName = field.getAnnotation(Column.class).name();
+                field.setAccessible(true);
                 field.set(result, cursor.getObject(columnName));
+                field.setAccessible(false);
             }
             return result;
 
