@@ -8,7 +8,7 @@ public interface ReflectionJdbcDao<T> {
 
     void insert(T object) throws SQLException;
 
-    void update(T object);
+    void update(T object) throws SQLException;
 
     void deleteByKey(T key) throws SQLException;
 

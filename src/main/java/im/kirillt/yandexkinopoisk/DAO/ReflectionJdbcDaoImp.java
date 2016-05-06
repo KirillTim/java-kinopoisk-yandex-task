@@ -43,8 +43,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     @Override
-    public void update(T object) {
-
+    public void update(T object) throws SQLException {
+        final PreparedStatement statement = generateUpdateStatement(object);
+        statement.executeQuery();
     }
 
     @Override
@@ -84,6 +85,27 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             }
         }
         return values;
+    }
+
+    private PreparedStatement generateUpdateStatement(T object) throws SQLException {
+        final Map<String, Object> setValues = getFieldsValues(columns, object);
+        final Map<String, Object> keyValues = getFieldsValues(keys, object);
+        final StringJoiner setJoiner = new StringJoiner(",");
+        for (String key : setValues.keySet()) {
+            setJoiner.add(key + "=?");
+        }
+        final String query = "SET "+setJoiner+ generateWhereString(keyValues);
+        final PreparedStatement statement = connection.prepareStatement(query);
+        int index = 1;
+        for (Object value : setValues.values()) {
+            statement.setObject(index, value);
+            index++;
+        }
+        for (Object value : keyValues.values()) {
+            statement.setObject(index, value);
+            index ++;
+        }
+        return statement;
     }
 
     private PreparedStatement generateInsertStatement(Map<String, Object> values) throws SQLException {
