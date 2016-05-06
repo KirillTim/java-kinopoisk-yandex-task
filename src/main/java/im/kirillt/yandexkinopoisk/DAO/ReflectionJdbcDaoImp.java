@@ -48,8 +48,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     @Override
-    public void deleteByKey(T key) {
-
+    public void deleteByKey(T key) throws SQLException {
+        final PreparedStatement statement = generateDeleteStatement(getFieldsValues(keys, key));
+        statement.executeUpdate();
     }
 
     @Override
@@ -103,14 +104,25 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         for (String key : keys.keySet()) {
             keysJoiner.add(key + "= ? ");
         }
-        return keysJoiner.toString();
+        return " WHERE " + keysJoiner.toString();
+    }
+
+    private PreparedStatement generateDeleteStatement(Map<String, Object> keys) throws SQLException {
+        if (keys.isEmpty()) {
+            throw new IllegalArgumentException("keys shouldn't be empty");
+        }
+        final String whereString = generateWhereString(keys);
+        String query = "DELETE FROM " + tableName + whereString;
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement = addValues(statement, keys);
+        return statement;
     }
 
     private PreparedStatement generateSelectStatement(Map<String, Object> keys) throws SQLException {
         final String whereString = generateWhereString(keys);
         String query = "SELECT * FROM " + tableName;
         if (!whereString.isEmpty()) {
-            query += " WHERE " + whereString;
+            query += whereString;
         }
         PreparedStatement statement = connection.prepareStatement(query);
         statement = addValues(statement, keys);

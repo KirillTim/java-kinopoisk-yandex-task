@@ -10,7 +10,7 @@ public interface ReflectionJdbcDao<T> {
 
     void update(T object);
 
-    void deleteByKey(T key);
+    void deleteByKey(T key) throws SQLException;
 
     T selectByKey(T key) throws SQLException;
 
