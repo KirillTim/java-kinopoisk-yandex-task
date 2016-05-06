@@ -99,13 +99,17 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         return statement;
     }
 
-    private PreparedStatement generateSelectStatement(Map<String, Object> values) throws SQLException {
-        final StringJoiner keysJoiner = new StringJoiner(",", "(", ")");
-        keysJoiner.setEmptyValue("*");
-        values.keySet().forEach(keysJoiner::add);
-        final String query = "select " + keysJoiner + " from " + tableName;
+    private PreparedStatement generateSelectStatement(Map<String, Object> keys) throws SQLException {
+        final StringJoiner keysJoiner = new StringJoiner(",");
+        for (String key : keys.keySet()) {
+            keysJoiner.add(key+"='?'");
+        }
+        String query = "SELECT * FROM " + tableName;
+        if (!keys.isEmpty()) {
+            query += " WHERE " + keysJoiner;
+        }
         PreparedStatement statement = connection.prepareStatement(query);
-        statement = addValues(statement, values);
+        statement = addValues(statement, keys);
         return statement;
     }
 
