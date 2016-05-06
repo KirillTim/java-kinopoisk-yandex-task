@@ -98,14 +98,19 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         return statement;
     }
 
-    private PreparedStatement generateSelectStatement(Map<String, Object> keys) throws SQLException {
+    private String generateWhereString(Map<String, Object> keys) {
         final StringJoiner keysJoiner = new StringJoiner(",");
         for (String key : keys.keySet()) {
             keysJoiner.add(key + "= ? ");
         }
+        return keysJoiner.toString();
+    }
+
+    private PreparedStatement generateSelectStatement(Map<String, Object> keys) throws SQLException {
+        final String whereString = generateWhereString(keys);
         String query = "SELECT * FROM " + tableName;
-        if (!keys.isEmpty()) {
-            query += " WHERE " + keysJoiner;
+        if (!whereString.isEmpty()) {
+            query += " WHERE " + whereString;
         }
         PreparedStatement statement = connection.prepareStatement(query);
         statement = addValues(statement, keys);
