@@ -4,13 +4,14 @@ import im.kirillt.yandexkinopoisk.DAO.annotations.Column;
 import im.kirillt.yandexkinopoisk.DAO.annotations.Key;
 import im.kirillt.yandexkinopoisk.DAO.annotations.Table;
 
-@Table(name = "Person")
+import static im.kirillt.yandexkinopoisk.test.dao.DefaultDataSet.*;
+
+@Table(name = TABLE_NAME)
 public class Person {
     @Key
-    @Column(name = "id") int id;
-    @Column(name = "name") String name;
-    @Column(name = "last_Name") String lastName;
-    @Column(name = "age") int age;
+    @Column(name = COLUMN_ID) int id;
+    @Column(name = COLUMN_NAME) String name;
+    @Column(name = COLUMN_AGE) int age;
     public Person() {}
 
     public int getAge() {
@@ -29,14 +30,6 @@ public class Person {
         this.id = id;
     }
 
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
     public String getName() {
         return name;
     }
@@ -49,9 +42,8 @@ public class Person {
         int age;
         int id;
         String name;
-        String lastName;
 
-        private PersonBuilder() {
+        public PersonBuilder() {
         }
 
         public static PersonBuilder aPerson() {
@@ -73,17 +65,11 @@ public class Person {
             return this;
         }
 
-        public PersonBuilder withLastName(String lastName) {
-            this.lastName = lastName;
-            return this;
-        }
-
         public Person build() {
             Person person = new Person();
             person.setAge(age);
             person.setId(id);
             person.setName(name);
-            person.setLastName(lastName);
             return person;
         }
     }

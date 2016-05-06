@@ -1,5 +1,0 @@
-<dataset>
-    <PERSON ID = "1" NAME="Bob" LAST_NAME="Doe" AGE="18"/>
-    <PERSON ID = "2" NAME="Alice" LAST_NAME="Foo" AGE="23"/>
-    <PERSON ID = "3" NAME="Charlie" LAST_NAME="Brown" AGE="42"/>
-</dataset>
