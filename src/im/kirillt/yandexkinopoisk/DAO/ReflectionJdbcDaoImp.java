@@ -76,7 +76,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         final HashMap<String, Object> values = new HashMap<>();
         for (Field field : columns) {
             try {
+                field.setAccessible(true);
                 values.put(field.getName(), field.get(object));
+                field.setAccessible(false);
             } catch (IllegalAccessException ex) {
                 throw new FieldException(field, ex);
             }
