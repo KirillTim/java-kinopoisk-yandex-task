@@ -1,3 +1,4 @@
+DROP TABLE if exists PERSON;
 create table if not exists MultiKeysPerson (
 	ID int not null,
 	NAME varchar,
