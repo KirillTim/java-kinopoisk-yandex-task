@@ -9,9 +9,9 @@ import static im.kirillt.yandexkinopoisk.test.dao.DefaultDataSet.*;
 @Table(name = TABLE_NAME)
 public class Person {
     @Key
-    @Column(name = COLUMN_ID) int id;
-    @Column(name = COLUMN_NAME) String name;
-    @Column(name = COLUMN_AGE) int age;
+    private @Column(name = COLUMN_ID) int id;
+    private @Column(name = COLUMN_NAME) String name;
+    private @Column(name = COLUMN_AGE) int age;
     public Person() {}
 
     public int getAge() {
