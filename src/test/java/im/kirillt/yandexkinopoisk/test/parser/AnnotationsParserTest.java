@@ -1,4 +1,4 @@
-package im.kirillt.yandexkinopoisk.test;
+package im.kirillt.yandexkinopoisk.test.parser;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
