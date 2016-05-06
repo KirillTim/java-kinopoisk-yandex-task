@@ -33,6 +33,13 @@
             <version>2.5.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- fancy mock databases builder -->
+        <dependency>
+            <groupId>de.ppi.dbunit.datasetbuilder</groupId>
+            <artifactId>dbunit-datasetbuilder</artifactId>
+            <version>1.4</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jcl</artifactId>
