@@ -4,6 +4,7 @@ import im.kirillt.yandexkinopoisk.DAO.annotations.Column;
 import im.kirillt.yandexkinopoisk.DAO.annotations.parser.AnnotationsParser;
 import im.kirillt.yandexkinopoisk.DAO.exceptions.DataAccessException;
 import im.kirillt.yandexkinopoisk.DAO.exceptions.FieldException;
+import im.kirillt.yandexkinopoisk.DAO.exceptions.NoKeysFoundException;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -35,6 +36,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         this.tableName = AnnotationsParser.getTable(type.getClass());
         this.columns = AnnotationsParser.getColumns(type.getClass());
         this.keys = AnnotationsParser.getKeys(type.getClass());
+        if (this.keys.isEmpty()) {
+            throw new NoKeysFoundException(typeHolder);
+        }
     }
 
     @Override
