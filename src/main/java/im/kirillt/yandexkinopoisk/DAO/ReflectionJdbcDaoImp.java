@@ -119,10 +119,9 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     private PreparedStatement generateSelectStatement(Map<String, Object> keys) throws SQLException {
-        final String whereString = generateWhereString(keys);
         String query = "SELECT * FROM " + tableName;
-        if (!whereString.isEmpty()) {
-            query += whereString;
+        if (!keys.isEmpty()) {
+            query += generateWhereString(keys);
         }
         PreparedStatement statement = connection.prepareStatement(query);
         statement = addValues(statement, keys);
