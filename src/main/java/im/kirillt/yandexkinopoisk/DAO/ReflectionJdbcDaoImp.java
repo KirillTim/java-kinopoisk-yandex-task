@@ -50,7 +50,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     @Override
     public boolean update(T object) {
         try (final PreparedStatement statement = generateUpdateStatement(object)) {
-            statement.executeQuery();
+            statement.executeUpdate();
             return true;
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -118,7 +118,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         for (String key : setValues.keySet()) {
             setJoiner.add(key + "=?");
         }
-        final String query = "SET " + setJoiner + generateWhereString(keyValues);
+        final String query = "UPDATE " + tableName + " SET " + setJoiner + generateWhereString(keyValues);
         final PreparedStatement statement = connection.prepareStatement(query);
         int index = 1;
         for (Object value : setValues.values()) {
