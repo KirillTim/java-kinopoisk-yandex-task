@@ -1,4 +1,4 @@
-package im.kirillt.yandexkinopoisk.test;
+package im.kirillt.yandexkinopoisk.test.dao;
 
 import org.junit.Test;
 
