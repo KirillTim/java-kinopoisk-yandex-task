@@ -9,11 +9,19 @@ public class DefaultDataSet {
     public static final String COLUMN_ID = "ID";
     public static final String COLUMN_NAME = "NAME";
     public static final String COLUMN_AGE = "AGE";
+    public static final Person[] defaultPersons
+            = new Person[]{new Person(1, "Bob", 18), new Person(2, "Alice", 23), new Person(3, "Charlie", 42)};
     private static DataSetBuilder builder = null;
 
     public static DataSetBuilder getDefaultBuilder() throws DataSetException {
         if (builder == null) {
             builder = new DataSetBuilder();
+            for (Person person : defaultPersons) {
+                builder.newRow(TABLE_NAME)
+                        .with(COLUMN_ID, person.getId())
+                        .with(COLUMN_NAME, person.getName())
+                        .with(COLUMN_AGE, person.getAge()).add();
+            }
         }
         return builder;
     }
@@ -22,9 +30,6 @@ public class DefaultDataSet {
         if (builder == null) {
             builder = getDefaultBuilder();
         }
-        builder.newRow(TABLE_NAME).with(COLUMN_ID, 1).with(COLUMN_NAME, "Bob").with(COLUMN_AGE, 18).add();
-        builder.newRow(TABLE_NAME).with(COLUMN_ID, 2).with(COLUMN_NAME, "Alice").with(COLUMN_AGE, 23).add();
-        builder.newRow(TABLE_NAME).with(COLUMN_ID, 3).with(COLUMN_NAME, "Charlie").with(COLUMN_AGE, 42).add();
         return builder.build();
     }
 }

@@ -14,6 +14,12 @@ public class Person {
     private @Column(name = COLUMN_AGE) int age;
     public Person() {}
 
+    public Person(int id, String name, int age) {
+        this.age = age;
+        this.id = id;
+        this.name = name;
+    }
+
     public int getAge() {
         return age;
     }
