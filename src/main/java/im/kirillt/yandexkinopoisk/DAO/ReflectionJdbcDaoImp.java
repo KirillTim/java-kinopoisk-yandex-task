@@ -65,6 +65,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
 
     @Override
     public T selectByKey(T key) {
+        //it's better to return Either[T, SQLException] though
         try (final PreparedStatement statement = generateSelectStatement(getFieldsValues(keys, key));
              final ResultSet resultSet = statement.executeQuery()) {
             resultSet.next();
