@@ -9,8 +9,18 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
 
-
+/**
+ * Annotated fields parser
+ */
 public class AnnotationsParser {
+
+    /**
+     * Return name provided by {@link Table} annotation
+     *
+     * @param clazz class to get table name from
+     * @return table name
+     * @throws NotATableException if class have no {@link Table} annotation
+     */
     public static String getTable(Class<?> clazz) throws NotATableException {
         if (clazz.isAnnotationPresent(Table.class)) {
             return clazz.getAnnotation(Table.class).name();
@@ -18,10 +28,18 @@ public class AnnotationsParser {
         throw new NotATableException(clazz);
     }
 
+    /**
+     * @param clazz class to get fields from
+     * @return fields with {@link Key} annotation
+     */
     public static List<Field> getKeys(Class<?> clazz) {
         return getAnnotatedFields(clazz, Key.class);
     }
 
+    /**
+     * @param clazz class to get fields from
+     * @return fields with {@link Column} annotation
+     */
     public static List<Field> getColumns(Class<?> clazz) {
         return getAnnotatedFields(clazz, Column.class);
     }

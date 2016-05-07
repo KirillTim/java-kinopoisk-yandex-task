@@ -2,7 +2,7 @@ package im.kirillt.yandex.kinopoisk.DAO;
 
 import im.kirillt.yandex.kinopoisk.DAO.annotations.Column;
 import im.kirillt.yandex.kinopoisk.DAO.exceptions.DataAccessException;
-import im.kirillt.yandex.kinopoisk.DAO.exceptions.FieldException;
+import im.kirillt.yandex.kinopoisk.DAO.exceptions.FieldAccessException;
 import im.kirillt.yandex.kinopoisk.DAO.exceptions.NoKeysFoundException;
 import im.kirillt.yandex.kinopoisk.DAO.annotations.parser.AnnotationsParser;
 
@@ -13,6 +13,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+/**
+ * Simple Reflection DAO
+ * Get table name from {@link im.kirillt.yandex.kinopoisk.DAO.annotations.Table} annotation
+ * Get keys from fields with {@link im.kirillt.yandex.kinopoisk.DAO.annotations.Key} annotation
+ * Get columns from fields with {@link im.kirillt.yandex.kinopoisk.DAO.annotations.Column} annotation
+ *
+ * @param <T> Type DAO created for, should have default constructor
+ */
 public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
 
     private final Connection connection;
@@ -23,6 +31,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
 
     /**
      * Main and only constructor
+     *
      * @param typeHolder type T class information for object instantiation
      * @param connection database connection to read from and write to
      */
@@ -47,8 +56,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     /**
-     * @inheritDoc
      * @throws DataAccessException if any SQL Error happened
+     * @inheritDoc
      */
     @Override
     public boolean insert(T object) {
@@ -61,8 +70,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     /**
-     * @inheritDoc
      * @throws DataAccessException if any SQL Error happened
+     * @inheritDoc
      */
     @Override
     public boolean update(T object) {
@@ -75,8 +84,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     /**
-     * @inheritDoc
      * @throws DataAccessException if <b>object not found</b> or if any SQL Error happened
+     * @inheritDoc
      */
     @Override
     public boolean deleteByKey(T key) {
@@ -89,8 +98,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     /**
-     * @inheritDoc
      * @throws DataAccessException if <b>object not found</b> or if any SQL Error happened
+     * @inheritDoc
      */
     @Override
     public T selectByKey(T key) {
@@ -108,8 +117,8 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     }
 
     /**
-     * @inheritDoc
      * @throws DataAccessException if any SQL Error happened
+     * @inheritDoc
      */
     @Override
     public List<T> selectAll() {
@@ -133,7 +142,7 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
                 values.put(field.getName(), field.get(object));
                 field.setAccessible(false);
             } catch (IllegalAccessException ex) {
-                throw new FieldException(field, ex);
+                throw new FieldAccessException(field, ex);
             }
         }
         return values;

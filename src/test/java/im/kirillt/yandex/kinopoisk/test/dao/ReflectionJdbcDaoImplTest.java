@@ -45,7 +45,7 @@ public class ReflectionJdbcDaoImplTest {
         Person toInsert = new Person.PersonBuilder().withId(100500).withName("Uniq Name").withAge(666).build();
         boolean result = personDao.insert(toInsert);
         assertTrue(result);
-        IDataSet expected =  DefaultDataSet.getDefaultBuilder().newRow(DefaultDataSet.TABLE_NAME)
+        IDataSet expected = DefaultDataSet.getDefaultBuilder().newRow(DefaultDataSet.TABLE_NAME)
                 .with(DefaultDataSet.COLUMN_ID, toInsert.getId())
                 .with(DefaultDataSet.COLUMN_NAME, toInsert.getName())
                 .with(DefaultDataSet.COLUMN_AGE, toInsert.getAge()).add().build();
