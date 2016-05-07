@@ -21,6 +21,11 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
     private List<Field> keys;
     private final Class<T> typeHolder;
 
+    /**
+     * Main and only constructor
+     * @param typeHolder type T class information for object instantiation
+     * @param connection database connection to read from and write to
+     */
     public ReflectionJdbcDaoImp(Class<T> typeHolder, Connection connection) {
         // java generics sucks!
         // It's such a pain to use language with no types information
@@ -41,6 +46,10 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         }
     }
 
+    /**
+     * @inheritDoc
+     * @throws DataAccessException if any SQL Error happened
+     */
     @Override
     public boolean insert(T object) {
         try (final PreparedStatement statement = generateInsertStatement(getFieldsValues(columns, object))) {
@@ -51,6 +60,10 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         }
     }
 
+    /**
+     * @inheritDoc
+     * @throws DataAccessException if any SQL Error happened
+     */
     @Override
     public boolean update(T object) {
         try (final PreparedStatement statement = generateUpdateStatement(object)) {
@@ -61,6 +74,10 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         }
     }
 
+    /**
+     * @inheritDoc
+     * @throws DataAccessException if <b>object not found</b> or if any SQL Error happened
+     */
     @Override
     public boolean deleteByKey(T key) {
         try (final PreparedStatement statement = generateDeleteStatement(getFieldsValues(keys, key))) {
@@ -71,6 +88,10 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
         }
     }
 
+    /**
+     * @inheritDoc
+     * @throws DataAccessException if <b>object not found</b> or if any SQL Error happened
+     */
     @Override
     public T selectByKey(T key) {
         //it's better to return Either[T, SQLException] though
@@ -79,10 +100,17 @@ public class ReflectionJdbcDaoImp<T> implements ReflectionJdbcDao<T> {
             resultSet.next();
             return generateObject(resultSet);
         } catch (SQLException ex) {
+            // It's not the best solution to throw an exception if key not found,
+            // but there is no way to check is something goes wrong with database
+            // or is key not found on a such low level
             throw new DataAccessException(ex);
         }
     }
 
+    /**
+     * @inheritDoc
+     * @throws DataAccessException if any SQL Error happened
+     */
     @Override
     public List<T> selectAll() {
         try (final PreparedStatement preparedStatement = generateSelectStatement(Collections.emptyMap());
